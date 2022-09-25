@@ -6,6 +6,7 @@ from www.models import User
 
 from www.index.routes import index_bp
 from www.login.routes import login_bp
+from www.api.routes   import api_bp
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app():
 
     app.register_blueprint(index_bp, url_prefix='/')
     app.register_blueprint(login_bp, url_prefix='/login')
+    app.register_blueprint(api_bp,   url_prefix='/api')
 
     db.init_app(app)
 
