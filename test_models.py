@@ -11,12 +11,18 @@ def create_basic():
 
     food_test = [
         Food(name="Siciliana al Salame", price=1),
-        Food(name="Hot Dog", price=1),
-        Food(name="Pizza", price=1),
-        Food(name="Pizza solo formaggio", price=1),
-        Food(name="Cipollina", price=1),
+        Food(name="Hot Dog", price=1.30),
+        Food(name="Pizza", price=1.30),
+        Food(name="Pizza solo formaggio", price=1.30),
+        Food(name="Cipollina", price=1.30),
     ]
     db.session.add_all(food_test)
+
+    drink_test = [
+        Drink(name="Pepsi", price=1.25),
+        Drink(name="Sprite", price=1.23)
+    ]
+    db.session.add_all(drink_test)
 
     db.session.commit()
     return user_test
