@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 from flask_login import login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from models import User
+from www.models import User
 
 index = Blueprint('index', __name__)
 
