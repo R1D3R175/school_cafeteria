@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -54,28 +56,30 @@ class FoodInOrder(db.Model):
             f"    Drink: {self.drink}\n"
         )
 
+@dataclass
 class Food(db.Model):
     """
         Pass this:
         name: str
         price: float
     """
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
-    name = db.Column(db.String(31), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
+    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
+    name: str = db.Column(db.String(31), nullable=False)
+    price: float = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f"<Food ID: {self.id} ({self.name})>"
 
+@dataclass
 class Drink(db.Model):
     """
         Pass this:
         name: str
         price: float
     """
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
-    name = db.Column(db.String(31), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
+    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
+    name: str = db.Column(db.String(31), nullable=False)
+    price: float = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f"<Drink ID: {self.id} ({self.name})>"
