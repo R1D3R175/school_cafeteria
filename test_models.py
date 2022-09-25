@@ -29,7 +29,7 @@ def create_order_for(user):
 
     food_list = []
     for i in range(5):
-        food_list.append(FoodInOrder(order_id=order.id, food_id=i))
+        food_list.append(FoodInOrder(order=order, food_id=i))
 
     db.session.add_all(food_list)
     db.session.commit()
