@@ -1,12 +1,12 @@
 
 function get_dropdown_list_from(endpoint) {
-    var $dropdown_list = $("<ul>", { "class": "dropdown-menu "})
+    const $dropdown_list = $("<ul>", { "class": "dropdown-menu "})
     $.ajax({
         method: "GET",
         url: endpoint,
         dataType: "json",
         success: function(results) {
-            var result_name = Object.keys(results)[0]
+            const result_name = Object.keys(results)[0]
             for (const result of results[result_name]) {
                 $("<li>").append($("<a>", {
                     text: result["name"],
@@ -24,11 +24,11 @@ function get_dropdown_list_from(endpoint) {
 }
 
 function create_dropdown_from(endpoint, button_text) { 
-    var $dropdown_list = get_dropdown_list_from(endpoint)
-    var $dropdown = $("<div>", { 
+    const $dropdown_list = get_dropdown_list_from(endpoint)
+    const $dropdown = $("<div>", { 
         "class": `dropdown`
     })   
-    var $dropdown_button = $("<button>", {
+    const $dropdown_button = $("<button>", {
         text: button_text,
         "class": "btn btn-secondary dropdown-toggle",
         "type": "button",
@@ -41,12 +41,22 @@ function create_dropdown_from(endpoint, button_text) {
     return $dropdown
 }
 
-function create_form() {
-    var $form_container = $("#order-container")
+function create_dropdowns() {
+    const $food_dropdown = create_dropdown_from("/api/get_food", "Add food")
+    const $drink_dropdown = create_dropdown_from("/api/get_drink", "Add drink")
+    return [ $food_dropdown, $drink_dropdown ]
+}
 
-    var $food_dropdown = create_dropdown_from("/api/get_foods", "Add food")
-    var $drink_dropdown = create_dropdown_from("/api/get_drinks", "Add drink")
+function create_form() {
+    const $form_container = $("#order-container")
+    const [ $food_dropdown, $drink_dropdown] = create_dropdowns()    
     $form_container.append($food_dropdown, $drink_dropdown)
+
+    $("<button>", {
+        text: "Order",
+        "type": "submit",
+        "class": "btn btn-primary"
+    }).appendTo($("#order-form"))
 }
 
 function get_by_id(endpoint, id) {
@@ -60,12 +70,12 @@ function get_by_id(endpoint, id) {
 }
 
 $(document).on("click", ".dropdown-item", async function() {
-    var data = (await get_by_id($(this).attr("api_source"), $(this).attr("api_id")))[$(this).attr("api_type")]
+    const data = (await get_by_id($(this).attr("api_source"), $(this).attr("api_id")))[$(this).attr("api_type")]
 
-    var name = data["name"]
-    var price = data["price"].toFixed(2)
+    const name = data["name"]
+    const price = data["price"].toFixed(2)
     
-    var $card = $("<div>", {
+    const $card = $("<div>", {
         "class": "card"
     })
 
@@ -76,7 +86,7 @@ $(document).on("click", ".dropdown-item", async function() {
         $card
     )
 
-    var $card_ul = $("<ul>", {
+    const $card_ul = $("<ul>", {
         "class": "list-group list-group-flush"
     })
 
@@ -86,6 +96,7 @@ $(document).on("click", ".dropdown-item", async function() {
         "min": "1",
         "max": "10",
         "value": "1",
+        "name": `${$(this).attr("api_type")}_${data["id"]}`,
         "price": price
     }).appendTo(
         $("<li>", {
@@ -97,29 +108,25 @@ $(document).on("click", ".dropdown-item", async function() {
         text: `x1 ${price}\u20AC`,
         "class": "list-group-item order-info"
     }).appendTo($card_ul)
-
     $card_ul.appendTo($card)
-    
-    $(".dropdown").remove()
 
+    $(".dropdown").remove()
+    
     $card.appendTo($("#order-container"))
 
-    $("<button>", {
-        text: "Order",
-        "type": "submit",
-        "class": "btn btn-primary"
-    }).appendTo($("form"))
+    const [ $food_dropdown, $drink_dropdown] = create_dropdowns()
+    $("#order-container").append($food_dropdown, $drink_dropdown)
 })
 
 $(document).on("input", ".order-range", function() {
-    var $parent = $(this).parent()
-    var $order_range = $parent.children("input.order-range")
-    var $order_info = $parent.children("li.order-info")
+    const $parent = $(this).parent()
+    const $order_range = $parent.children("input.order-range")
+    const $order_info = $parent.children("li.order-info")
     
-    var amount = parseInt($order_range.val())
-    var total_price = (amount * parseFloat($order_range.attr("price")))
+    const amount = parseInt($order_range.val())
+    const total_price = (amount * parseFloat($order_range.attr("price")))
 
-    var final_string = `x${amount} ${total_price.toFixed(2)}\u20AC`
+    const final_string = `x${amount} ${total_price.toFixed(2)}\u20AC`
     $order_info.text(final_string)
 })
 
