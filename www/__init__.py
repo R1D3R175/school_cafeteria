@@ -8,8 +8,13 @@ from www.index.routes import index_bp
 from www.login.routes import login_bp
 from www.api.routes   import api_bp
 
+from www.converters import IntListConverter
+
 def create_app():
     app = Flask(__name__)
+
+    app.url_map.converters['int_list'] = IntListConverter
+
     app.config.from_pyfile("config.py")
 
     app.register_blueprint(index_bp, url_prefix='/')
