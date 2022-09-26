@@ -7,21 +7,29 @@ function get_dropdown_list_from(get_endpoint, get_type) {
     const $dropdown_list = $("<ul>", { "class": "dropdown-menu "})
     const exclude = (excluded[get_type].length >= 2 ? excluded[get_type] : "")
     const endpoint = [ get_endpoint, get_type, exclude.toString() ].join('/')
-    console.log(endpoint)
     $.ajax({
         method: "GET",
         url: endpoint,
         dataType: "json",
         success: function(results) {
-            for (const result of results[get_type]) {
+            if(results[get_type].length === 0) {
                 $("<li>").append($("<a>", {
-                    text: result["name"],
-                    "class": `dropdown-item ${get_type}`,
+                    text: "You have already added all drinks",
+                    "class": "dropdown-item disabled",
                     "href": "#",
-                    "api_source": endpoint,
-                    "api_type": get_type,
-                    "api_id": result['id']
+                    "unusable": ""
                 })).appendTo($dropdown_list)
+            } else {
+                for (const result of results[get_type]) {
+                    $("<li>").append($("<a>", {
+                        text: result["name"],
+                        "class": `dropdown-item ${get_type}`,
+                        "href": "#",
+                        "api_source": [ get_endpoint, get_type ].join('/'),
+                        "api_type": get_type,
+                        "api_id": result['id']
+                    })).appendTo($dropdown_list)
+                }
             }
         }
     })
@@ -79,12 +87,15 @@ $(document).on("click", ".dropdown-item", async function() {
     const api_type = $(this).attr("api_type")
     const data = (await get_by_id($(this).attr("api_source"), $(this).attr("api_id")))[api_type]
 
-    const id = data["id"]
+    const api_id = data["id"]
     const name = data["name"]
     const price = data["price"].toFixed(2)
     
     const $card = $("<div>", {
-        "class": "card"
+        "class": "card order-entry",
+        "api_type": api_type,
+        "api_id": api_id,
+        "price": price
     })
 
     $("<div>", {
@@ -95,7 +106,7 @@ $(document).on("click", ".dropdown-item", async function() {
     )
 
     const $card_ul = $("<ul>", {
-        "class": "list-group list-group-flush"
+        "class": "list-group list-group-flush",
     })
 
     $("<input>", {
@@ -104,8 +115,8 @@ $(document).on("click", ".dropdown-item", async function() {
         "min": "1",
         "max": "10",
         "value": "1",
-        "name": `${api_type}_${id}`,
-        "price": price
+        "name": `${api_type}_${api_id}` // to be remove for json request!
+        
     }).appendTo(
         $("<li>", {
             "class": "list-group-item"
@@ -122,22 +133,28 @@ $(document).on("click", ".dropdown-item", async function() {
     
     $card.appendTo($("#order-container"))
 
-    excluded[api_type].push(id)
+    excluded[api_type].push(api_id)
 
     const [ $food_dropdown, $drink_dropdown] = create_dropdowns()
     $("#order-container").append($food_dropdown, $drink_dropdown)
 })
 
 $(document).on("input", ".order-range", function() {
-    const $parent = $(this).parent()
-    const $order_range = $parent.children("input.order-range")
-    const $order_info = $parent.children("li.order-info")
+    const $parent_ul = $(this).parent()
+    
+    const $order_range = $parent_ul.children("input.order-range")
+    const $order_info = $parent_ul.children("li.order-info")
+    const price = $parent_ul.parent().attr("price")
     
     const amount = parseInt($order_range.val())
-    const total_price = (amount * parseFloat($order_range.attr("price")))
+    const total_price = (amount * parseFloat(price))
 
     const final_string = `x${amount} ${total_price.toFixed(2)}\u20AC`
     $order_info.text(final_string)
+})
+
+$(document).on("submit", "#order-form", function() {
+    // TODO: I'm tired, going to sleep. cya tomorrow
 })
 
 $(function () {
