@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, redirect, url_for
+from flask import Blueprint, jsonify, request
 
 from www.models import Food, Drink
 
@@ -27,3 +27,7 @@ def get_drink_by_id(id):
 @api_bp.route('/get/drink/<int_list:values>')
 def exclude_drinks(values):
     return jsonify(drink=Drink.query.filter(Drink.id.not_in(values)).all())
+
+@api_bp.route('/handle_order', methods=["POST"])
+def handle_order():
+    return request.form
