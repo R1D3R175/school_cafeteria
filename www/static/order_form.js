@@ -1,19 +1,25 @@
+const excluded = {
+    "food": [0],
+    "drink": [0]
+}
 
-function get_dropdown_list_from(endpoint) {
+function get_dropdown_list_from(get_endpoint, get_type) {
     const $dropdown_list = $("<ul>", { "class": "dropdown-menu "})
+    const exclude = (excluded[get_type].length >= 2 ? excluded[get_type] : "")
+    const endpoint = [ get_endpoint, get_type, exclude.toString() ].join('/')
+    console.log(endpoint)
     $.ajax({
         method: "GET",
         url: endpoint,
         dataType: "json",
         success: function(results) {
-            const result_name = Object.keys(results)[0]
-            for (const result of results[result_name]) {
+            for (const result of results[get_type]) {
                 $("<li>").append($("<a>", {
                     text: result["name"],
-                    "class": `dropdown-item ${result_name}`,
+                    "class": `dropdown-item ${get_type}`,
                     "href": "#",
                     "api_source": endpoint,
-                    "api_type": result_name,
+                    "api_type": get_type,
                     "api_id": result['id']
                 })).appendTo($dropdown_list)
             }
@@ -23,8 +29,8 @@ function get_dropdown_list_from(endpoint) {
     return $dropdown_list
 }
 
-function create_dropdown_from(endpoint, button_text) { 
-    const $dropdown_list = get_dropdown_list_from(endpoint)
+function create_dropdown_from(get_endpoint, get_type, button_text) { 
+    const $dropdown_list = get_dropdown_list_from(get_endpoint, get_type)
     const $dropdown = $("<div>", { 
         "class": `dropdown`
     })   
@@ -42,8 +48,8 @@ function create_dropdown_from(endpoint, button_text) {
 }
 
 function create_dropdowns() {
-    const $food_dropdown = create_dropdown_from("/api/get_food", "Add food")
-    const $drink_dropdown = create_dropdown_from("/api/get_drink", "Add drink")
+    const $food_dropdown = create_dropdown_from("/api/get", "food", "Add food")
+    const $drink_dropdown = create_dropdown_from("/api/get", "drink", "Add drink")
     return [ $food_dropdown, $drink_dropdown ]
 }
 
@@ -70,8 +76,10 @@ function get_by_id(endpoint, id) {
 }
 
 $(document).on("click", ".dropdown-item", async function() {
-    const data = (await get_by_id($(this).attr("api_source"), $(this).attr("api_id")))[$(this).attr("api_type")]
+    const api_type = $(this).attr("api_type")
+    const data = (await get_by_id($(this).attr("api_source"), $(this).attr("api_id")))[api_type]
 
+    const id = data["id"]
     const name = data["name"]
     const price = data["price"].toFixed(2)
     
@@ -96,7 +104,7 @@ $(document).on("click", ".dropdown-item", async function() {
         "min": "1",
         "max": "10",
         "value": "1",
-        "name": `${$(this).attr("api_type")}_${data["id"]}`,
+        "name": `${api_type}_${id}`,
         "price": price
     }).appendTo(
         $("<li>", {
@@ -113,6 +121,8 @@ $(document).on("click", ".dropdown-item", async function() {
     $(".dropdown").remove()
     
     $card.appendTo($("#order-container"))
+
+    excluded[api_type].push(id)
 
     const [ $food_dropdown, $drink_dropdown] = create_dropdowns()
     $("#order-container").append($food_dropdown, $drink_dropdown)
