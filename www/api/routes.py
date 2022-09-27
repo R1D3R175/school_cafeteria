@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
+from flask_login import login_required
 
 from www.models import Food, Drink
 
@@ -28,6 +29,8 @@ def get_drink_by_id(id):
 def exclude_drinks(values):
     return jsonify(drink=Drink.query.filter(Drink.id.not_in(values)).all())
 
+@login_required
 @api_bp.route('/handle_order', methods=["POST"])
 def handle_order():
-    return request.form
+    print(request.get_json())
+    return Response(status=400)
