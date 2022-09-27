@@ -3,6 +3,11 @@ const excluded = {
     "drink": [0]
 }
 
+const api_maximum = {
+    "food": 5,
+    "drink": 2
+}
+
 function get_dropdown_list_from(get_endpoint, get_type) {
     const $dropdown_list = $("<ul>", { "class": "dropdown-menu "})
     const exclude = (excluded[get_type].length >= 2 ? excluded[get_type] : "")
@@ -12,24 +17,15 @@ function get_dropdown_list_from(get_endpoint, get_type) {
         url: endpoint,
         dataType: "json",
         success: function(results) {
-            if(results[get_type].length === 0) {
+            for (const result of results[get_type]) {
                 $("<li>").append($("<a>", {
-                    text: "You have already added all drinks",
-                    "class": "dropdown-item disabled",
+                    text: result["name"],
+                    "class": `dropdown-item ${get_type}`,
                     "href": "#",
-                    "unusable": ""
+                    "api_source": [ get_endpoint, get_type ].join('/'),
+                    "api_type": get_type,
+                    "api_id": result['id']
                 })).appendTo($dropdown_list)
-            } else {
-                for (const result of results[get_type]) {
-                    $("<li>").append($("<a>", {
-                        text: result["name"],
-                        "class": `dropdown-item ${get_type}`,
-                        "href": "#",
-                        "api_source": [ get_endpoint, get_type ].join('/'),
-                        "api_type": get_type,
-                        "api_id": result['id']
-                    })).appendTo($dropdown_list)
-                }
             }
         }
     })
@@ -136,7 +132,10 @@ $(document).on("click", ".dropdown-item", async function() {
     excluded[api_type].push(api_id)
 
     const [ $food_dropdown, $drink_dropdown] = create_dropdowns()
-    $("#order-container").append($food_dropdown, $drink_dropdown)
+    if(excluded['food'].length - 1 !== api_maximum['food'])
+        $("#order-container").append($food_dropdown)
+    if(excluded['drink'].length - 1 !== api_maximum['drink'])
+        $("#order-container").append($drink_dropdown)
 })
 
 $(document).on("input", ".order-range", function() {
@@ -154,8 +153,21 @@ $(document).on("input", ".order-range", function() {
 })
 
 $(document).on("submit", "#order-form", function() {
-    // TODO: I'm tired, going to sleep. cya tomorrow
-})
+    const $orders = $(".order-entry")
+    const $json_request = {
+        "food": [],
+        "drink": []
+    }
+
+    $orders.each(function() {
+        $json_request[$(this).attr("api_type")].push({
+            "id": $(this).attr("api_id"),
+            "amount": $(this).find("input.order-range").val()
+        })
+     })
+
+    console.log($json_request)
+''})
 
 $(function () {
     create_form()
