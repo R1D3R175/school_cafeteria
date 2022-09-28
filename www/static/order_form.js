@@ -5,8 +5,8 @@ const form_data = {
 
 // FORM CREATOR - START
 function get_dropdown_list_from(get_endpoint, get_type) {
-    const $dropdown_list = $("<ul>", { 
-        "class": "dropdown-menu" 
+    const $dropdown_list = $("<ul>", {
+        "class": "dropdown-menu"
     })
 
     const endpoint = [get_endpoint, get_type].join('/')
@@ -57,15 +57,9 @@ function create_dropdowns() {
 }
 
 function create_form() {
-    const $form_container = $("#order-container")
-    const [ $food_dropdown, $drink_dropdown ] = create_dropdowns()
-    $form_container.append($food_dropdown, $drink_dropdown)
-
-    $("<button>", {
-        text: "Order",
-        "type": "submit",
-        "class": "btn btn-primary"
-    }).appendTo($("#order-form"))
+    const $order_container = $("#order-container")
+    const [$food_dropdown, $drink_dropdown] = create_dropdowns()
+    $order_container.append($food_dropdown, $drink_dropdown)
 }
 
 function create_entry(api_type, api_id, name, price) {
@@ -106,7 +100,7 @@ function create_entry(api_type, api_id, name, price) {
     }).appendTo($card_ul)
 
     $card_ul.appendTo($card)
-    $card.prependTo($(".food-dropdown"))
+    $card.insertBefore($(".food-dropdown"))
 
     form_data[api_type][api_id] = {
         "name": name,
@@ -165,6 +159,12 @@ $(document).on("change", ".order-range", function () {
 })
 // ORDER HANDLER - END
 
+function clear_form_backup() {
+    form_data['food'] = {}
+    form_data['drink'] = {}
+    sessionStorage.removeItem("form_data")
+}
+
 $(document).on("submit", "#order-form", function (form) {
     form.preventDefault()
 
@@ -188,7 +188,13 @@ $(document).on("submit", "#order-form", function (form) {
         contentType: "application/json; charset=utf-8",
         statusCode: {
             200: function () {
-                // TODO: Reset Form
+                const $order_container = $("#order-container")
+                const [$food_dropdown, $drink_dropdown] = create_dropdowns()
+
+                $order_container.empty()
+                $order_container.append($food_dropdown, $drink_dropdown)
+
+                clear_form_backup()
             },
             400: function () {
                 $("#order-container").prepend(
@@ -203,15 +209,15 @@ $(document).on("submit", "#order-form", function (form) {
     })
 })
 
-const wait_for_element = function(selector, callback) {
+const wait_for_element = function (selector, callback) {
     if (jQuery(selector).length) {
-      callback(jQuery(selector));
+        callback(jQuery(selector));
     } else {
-      setTimeout(function() {
-        wait_for_element(selector, callback);
-      }, 100);
+        setTimeout(function () {
+            wait_for_element(selector, callback);
+        }, 100);
     }
-  };
+};
 
 function restore_form() {
     const form_backup = JSON.parse(sessionStorage.getItem("form_data"))
@@ -221,7 +227,7 @@ function restore_form() {
         for (const id of Object.keys(form_backup[api_type])) {
             create_entry(api_type, id, form_backup[api_type][id]["name"], form_backup[api_type][id]["price"])
 
-            wait_for_element(`a.dropdown-item.food:contains('${form_backup[api_type][id]["name"]}')`, function(e) {
+            wait_for_element(`a.dropdown-item.food:contains('${form_backup[api_type][id]["name"]}')`, function (e) {
                 e.eq(0).remove()
             })
         }
@@ -230,18 +236,18 @@ function restore_form() {
     return true
 }
 
-$(window).on("load", function() {
+$(window).on("load", function () {
     if (restore_form()) {
         const $div_restored = $("<div>", {
             text: "Restored previous form",
             "class": "alert alert-success",
             "role": "alert"
         })
-        
+
         $div_restored.prependTo($("#order-container"))
 
-        setTimeout(function() {
-            $div_restored.fadeOut(400, function() {
+        setTimeout(function () {
+            $div_restored.fadeOut(400, function () {
                 $div_restored.remove()
             })
         }, 1000)
