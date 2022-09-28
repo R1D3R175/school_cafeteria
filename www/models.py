@@ -3,16 +3,18 @@ from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
+from sqlalchemy import func
+
 db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
     """
         Pass this:
-        username: str
-        password: str (hash)
+            username: str
+            password: str (hash)
 
-        is_worker: bool
-        is_admin: bool
+            is_worker: bool
+            is_admin: bool
     """
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
@@ -28,16 +30,34 @@ class User(UserMixin, db.Model):
 
 class Order(db.Model):
     """
-        Pass this:
-        user_id: int|User
+        Pass one of this:
+            user_id: int
+            user: User
     """
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     
     def __repr__(self):
-        return f"<Order ID: {self.id}>"
+        return f"<Order ID: {self.id} for U_ID: {self.user_id}>"
 
 class FoodInOrder(db.Model):
+    """
+        Pass this:
+            One of this:
+                order_id: int
+                order: Order
+
+            One of this:
+                food_id: int
+                food: Food
+            
+            One of this:
+                drink_id: int
+                drink: Drink
+
+            amount: int (default=0)
+    """
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
     order = db.relationship("Order", foreign_keys=[order_id])
@@ -48,6 +68,8 @@ class FoodInOrder(db.Model):
     drink_id = db.Column(db.Integer, db.ForeignKey('drink.id'))
     drink = db.relationship("Drink", foreign_keys=[drink_id])
 
+    amount = db.Column(db.Integer, default=1, nullable=False)
+    
     def __repr__(self):
         return (
             f"<FoodInOrder ID: {self.id}>\n"
@@ -60,8 +82,8 @@ class FoodInOrder(db.Model):
 class Food(db.Model):
     """
         Pass this:
-        name: str
-        price: float
+            name: str
+            price: float
     """
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
     name: str = db.Column(db.String(31), nullable=False)
@@ -74,8 +96,8 @@ class Food(db.Model):
 class Drink(db.Model):
     """
         Pass this:
-        name: str
-        price: float
+            name: str
+            price: float
     """
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True, unique=True, nullable=False)
     name: str = db.Column(db.String(31), nullable=False)
